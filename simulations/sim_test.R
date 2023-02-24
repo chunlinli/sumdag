@@ -1,7 +1,6 @@
 packages <- c("ncvreg","glmtlp","MASS")
 invisible(lapply(packages, library, character.only = TRUE))
 
-setwd('/home/yang3704/shared/network')
 source('keyfunctions_testing.R')
 
 
