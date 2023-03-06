@@ -1,23 +1,13 @@
-#testing
-
-#estimating Sigma using summary statistics in the regression of Y ~ X(IV) + Y(ancestor) on j's y
 
 
-#' Title
-#'
-#' @param output_prepare
-#' @param PhiHatj
-#' @param PiHatj
-#' @param covmat
-#' @param N
-#' @param j
-#'
-#' @return
-#' @export
+#' Internal function: estimating Sigma using summary statistics in the regression of Y ~ X(IV) + Y(ancestor) on j's y
 #'
 #' @examples
-estimate_Sigma <- function(output_prepare, PhiHatj, PiHatj, covmat, N, j){
-
+#' \dontrun{
+#' 
+#' }
+estimate_Sigma <- function(output_prepare, PhiHatj, PiHatj, cormat, N, j){
+		
 		Jp <- which(PhiHatj != 0) #IV set
 		Ap <- which(PiHatj != 0) #ancestry set
 		#standardize y
@@ -26,16 +16,16 @@ estimate_Sigma <- function(output_prepare, PhiHatj, PiHatj, covmat, N, j){
 		XjpXjp = output_prepare$xtx[Jp,Jp, drop=F]
 		XjpYp = xtyMat[Jp, j]
 		XjpYap = xtyMat[Jp,Ap, drop=F]
-		YapYap = covmat[Ap, Ap, drop=F]
-		YapYp = covmat[Ap, j]
+		YapYap = cormat[Ap, Ap, drop=F]
+		YapYp = cormat[Ap, j]
 		INV = solve(rbind(cbind(XjpXjp, XjpYap), cbind(t(XjpYap),YapYap)))
 		BETAS = INV %*% c(XjpYp, YapYp)
 		Nvec = N[Jp,j]
 		RSS = (1 - t(c(XjpYp, YapYp))%*%BETAS)*median(Nvec)
 		sigma2p = RSS/(median(Nvec)-length(Ap)-length(Jp) + 1)
-    	} else if (length(Jp) == 0 & length(Ap) > 0){
-		YapYap = covmat[Ap, Ap, drop=F]
-		YapYp = covmat[Ap, j]
+    	} else if (length(Jp) == 0 & length(Ap) > 0){ 
+		YapYap = cormat[Ap, Ap, drop=F]
+		YapYp = cormat[Ap, j]
 		BETAS = solve(YapYap) %*% YapYp
 		Nvec = N[,j]
 		RSS = (1 - t(YapYp)%*%BETAS)*median(Nvec)
@@ -55,58 +45,35 @@ estimate_Sigma <- function(output_prepare, PhiHatj, PiHatj, covmat, N, j){
     	return(list(sigma2hat=sigma2p, RSS=RSS))
 }
 
-#specify H and check acyclicity constraint
-#f_mat is a U matrix specifying what to detect
-#' Title
+#' Likelihood ratio tests
 #'
-#' @param PiHat
-#' @param testj
-#' @param j
+#' @param PiHat  A pxp superset of the directed relations among phenotypes; output from superDAG function
+#' @param PhiHat A qxp superset of the interventional relation; output from superDAG function
+#' @param ss_back output from the summary_stats_preprocess function
+#' @param pairs A list of vectors of length two to be tested, with each vector represents a directed node from the first to the second item of the vector
+#' @param cormat pxp correlation matrix of phenotypes; this matrix can be estimated by empricial correlation of null SNP. 
+#' @param N A qxp matrix of corresponding sample size for each SNP-phenotype pair. A scalar is also acceptable when all SNP-phentype pairs have the same sample size
+#' @param test_type "edge" refers to the test of multiple directed relations; "path" refers to the test of a directed pathway
 #'
-#' @return
+#' @return A list of likelihood ratio, and p-value
 #' @export
 #'
-#' @examples
-check_regularity <- function(PiHat, testj, j){
-	  	kk <- setdiff(which(PiHatj != 0), testj)
-	  	if (length(kk) > 0){
-	  		for ( i in 1:length(kk)) {
-	  			if (PiHat[j,kk[i]]!=0) {paste0('The path from ', kk[i], ' to ', j, 'is not testable \n')
-	  				testj[kk[i]] = PiHatj[kk[i]]
-	  				}
-	  		}
-	  		}
-	  return(testj)
-	  }
-
-#' Title
-#'
-#' @param ss_back
-#' @param PiHat
-#' @param PhiHat
-#' @param pairs
-#' @param covmat
-#' @param N
-#' @param method
-#' @param test_type
-#'
-#' @return
-#' @export
-#'
-#' @examples
-causal_inference <- function(ss_back, PiHat, PhiHat, pairs, covmat, N,
-                             method = "asymptotic", test_type = c("edge", "path")) {
+#' @examples 
+#' \dontrun{
+#' 
+#' }
+causal_inference <- function( PiHat, PhiHat, ss_back, pairs, cormat, N, 
+                             test_type = c("edge", "path")) {
     # based on an_mat, in_mat, f_mat, generate causal inference p-value
-    if (test_type == "edge" && method == "asymptotic") {
-        likelihood_ratios <- asymptotic_inference_internal(ss_back, PiHat, PhiHat, pairs, covmat, N)
+    if (test_type == "edge" ) {
+        likelihood_ratios <- asymptotic_inference_internal(ss_back, PiHat, PhiHat, pairs, cormat, N)
         likelihood_ratio <- sum(likelihood_ratios$likelihood_ratios)
         df <- sum(likelihood_ratios$df)
         p_value <- pchisq(likelihood_ratio, df = df, lower.tail = FALSE)
         list(likelihood_ratio = likelihood_ratio, df = df, p_value = p_value)
-    }  else if (test_type == "path" && method == "asymptotic") {
-        likelihood_ratios <- asymptotic_inference_internal(ss_back, PiHat, PhiHat, pairs, covmat, N)
+    }  else if (test_type == "path" ) {
+        likelihood_ratios <- asymptotic_inference_internal(ss_back, PiHat, PhiHat, pairs, cormat, N)
         likelihood_ratio <- likelihood_ratios$likelihood_ratios
-		#if (!all(likelihood_ratio==0))  likelihood_ratio <- likelihood_ratio[which(likelihood_ratio!=0)]
         p_value <- max(pchisq(likelihood_ratio, df = 1, lower.tail = FALSE))
         list(likelihood_ratios = likelihood_ratios, p_value = p_value)
 
@@ -115,60 +82,49 @@ causal_inference <- function(ss_back, PiHat, PhiHat, pairs, covmat, N,
     }
 }
 
-
-#' Title
-#'
-#' @param ss_back
-#' @param PiHat
-#' @param PhiHat
-#' @param pairs
-#' @param covmat
-#' @param N
-#'
-#' @return
-#' @export
+#' Internal function: asymptotic inference
 #'
 #' @examples
-asymptotic_inference_internal <- function(ss_back, PiHat, PhiHat, pairs, covmat, N) {
+#' \dontrun{
+#' 
+#' }
+asymptotic_inference_internal <- function(ss_back, PiHat, PhiHat, pairs, cormat, N) {
 
-    # based on an_mat, in_mat, f_mat, generate likelihood ratios
+    # based on an_mat, in_mat, f_mat, generate likelihood ratios 
     d_mat <- PiHat
     alt_mat <- PiHat
     jj <- NULL
     for (j in 1:length(pairs)){
     	    loc <- pairs[[j]]
-    	    if (PiHat[loc[2], loc[1]] == 0) {
+    	    if (PiHat[loc[2], loc[1]] == 0) {     	    
     		d_mat[loc[1],loc[2]] <- 0
-      	alt_mat[loc[1],loc[2]] <- 1
+      	alt_mat[loc[1],loc[2]] <- 1   		
     		jj <- c(jj, loc[2])
     		} else {print(paste('Edge from', loc[1],'to', loc[2], 'is degenerate'))}
     }
     jj <- unique(jj)
-
+    
     likelihood_ratios <- NULL
     df <- NULL
     p <- ncol(PiHat)
 
 	if (length(jj) > 0){
     for (jjj in 1:length(jj)) {
-    	#print(j)
-    		j <- jj[jjj]
-   	 	#PiHatj <- PiHat[,j]
-        PhiHatj <- PhiHat[,j]
-        testj <- d_mat[,j]
-        testaltj <- alt_mat[,j]
-        ancestor <- setdiff(which(testaltj!= 0), which(testj!=0))
-        #intervention <- which(PhiHat[, j] != 0)
+    		s <- jj[jjj]
+        PhiHatj <- PhiHat[,s]	
+        testj <- d_mat[,s]
+        testaltj <- alt_mat[,s]
+        ancestor <- setdiff(which(testaltj!= 0), which(testj!=0))       
         dfj <- 0
 
-        if ( median(N[,j]) >  sum(testaltj!=0) + sum(PhiHatj!=0) + 1 ) {
+        if ( median(N[,s]) >  sum(testaltj!=0) + sum(PhiHatj!=0) + 1 ) {                
                 if (length(ancestor) > 0)  {
                 an_mat <- testaltj
                 iv_mat <- PhiHatj
-                sigma_h1 <- estimate_Sigma(ss_back, iv_mat, an_mat, covmat, N, j)
-
+                sigma_h1 <- estimate_Sigma(ss_back, iv_mat, an_mat, cormat, N, j)
+                
                 an_mat <- testj
-                sigma_h0 <- estimate_Sigma(ss_back, iv_mat, an_mat, covmat, N, j)
+                sigma_h0 <- estimate_Sigma(ss_back, iv_mat, an_mat, cormat, N, j)
 
 				likelihood_ratio <- (sigma_h0$RSS - sigma_h1$RSS) / sigma_h1$sigma2hat
 				likelihood_ratios <- c(likelihood_ratios, likelihood_ratio)
@@ -176,13 +132,12 @@ asymptotic_inference_internal <- function(ss_back, PiHat, PhiHat, pairs, covmat,
 				df <- c(df, dfj)
 				#print(likelihood_ratio)
 				#print(j)
-        } else likelihood_ratios <- c(likelihood_ratios, 0)
+        } else likelihood_ratios <- c(likelihood_ratios, 0)  
         }
     }
     }
-
+    
     if (is.null(likelihood_ratios)) {likelihood_ratios = 0   ; df=0}
     return(list(likelihood_ratios=likelihood_ratios, df=df))
 }
-
 

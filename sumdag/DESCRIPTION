@@ -1,11 +1,20 @@
 Package: sumdag
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Estimation and inference of directed acyclic graph from GWAS summary statistics
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Authors@R: c(
+    person("Tianzhong", "Yang", , "yang3704@umn.edu", role = c("aut", "cph"),
+           comment = c(ORCID = "0000-0002-0162-7740")),
+    person("Chunlin", "Li", , "li000007@umn.edu", role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0003-2989-8785")),
+    person("Rachel", "Zilinskas", role = c("aut", "cph")),
+    person("Xiaotong", "Shen", role = c("ths", "cph")),
+    person("Wei", "Pan", role = c("ths", "cph"))
+  )
+Description: Provides functions for constructing and testing a directed acyclic graph from GWAS summary data. 
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.2.1
+Imports: 
+    glmtlp
