@@ -20,11 +20,10 @@
 #' @export
 #'
 #' @examples
-#' beta_mat <- matrix(rnorm(33 * 23), 33, 23)
-#' se_mat <- matrix(rnorm(33 * 23)^2, 33, 23)
+#' beta_mat <- matrix(rnorm(33*23), 33, 23)
+#' se_mat <- matrix(rnorm(33*23)^2, 33, 23)
 #' n <- 3393
-#' Xdata <- matrix(rnorm(500 * 33), 500, 33)
-#' preprocess(beta_mat, se_mat, n, geno_ref = var(Xdata))
+#' preprocess(beta_mat, se_mat, n)
 #'
 preprocess <- function(beta_mat, se_mat, n,
                        s_ = 0, maf_vec = NULL, geno_ref = NULL) {
@@ -49,10 +48,10 @@ preprocess <- function(beta_mat, se_mat, n,
         warning("maf_vec are ignored.")
     }
     if (!is.null(geno_ref)) {
-        XX <- geno_ref + diag(s_, nrow = nrow(geno_ref))
+        XX <- geno_ref + diag(s_, nrow(geno_ref))
         maf_vec <- diag(XX)
     } else {
-        XX <- diag(maf_vec) + diag(s_, nrow = nrow(maf_vec))
+        XX <- diag(maf_vec) + diag(s_, nrow(maf_vec))
     }
 
     yy_vec <- rep(NA, p)
@@ -86,12 +85,10 @@ preprocess <- function(beta_mat, se_mat, n,
 #'
 #' @import glmtlp stats
 #' @return A q by p matrix V.
-#' 
-#' @export
 #' @examples
 #' \dontrun{
-#' beta_mat <- matrix(rnorm(33 * 23), 33, 23)
-#' se_mat <- matrix(rnorm(33 * 23)^2, 33, 23)
+#' beta_mat <- matrix(rnorm(33*23), 33, 23)
+#' se_mat <- matrix(rnorm(33*23)^2, 33, 23)
 #' n <- 3393
 #' estimate_V(beta_mat, se_mat, preprocess(beta_mat, se_mat, n))
 #' }
@@ -134,18 +131,15 @@ estimate_V <- function(beta_mat, se_mat, n, stats_list) {
 #' @param Xy A q vector.
 #'
 #' @import stats
-#' @return A list of three vectors:
-#' AIC, BIC, SSE, and the estimated error variance.
-#' @export
 #' @examples
 #' \dontrun{
-#' X <- matrix(rnorm(100 * 10), 100, 10)
+#' X <- matrix(rnorm(100*10), 100, 10)
 #' y <- rnorm(100)
 #' XX <- t(X) %*% X
 #' Xy <- t(X) %*% y
 #' yy <- t(y) %*% y
 #' n <- 100
-#' beta_vec <- matrix(rnorm(10 * 5), 10, 5)
+#' beta_vec <- matrix(rnorm(10*5), 10, 5)
 #' pseudoBIC(beta_vec, n, XX, yy, Xy)
 #' }
 pseudoBIC <- function(beta_vec, n, XX, yy, Xy) {
@@ -180,15 +174,10 @@ pseudoBIC <- function(beta_vec, n, XX, yy, Xy) {
 #'
 #' @param V A q by p matrix. V matrix.
 #' @param thresh A positive scalar. Threshold.
-#' 
-#' @return A list of three matrices:
-#' A p by p ancestral relation matrix, a q by p interventional relation matrix,
-#' and a scalar n_test.
-#' @export
 #'
 #' @examples
 #' \dontrun{
-#' v <- matrix(rnorm(15 * 10), 15, 10)
+#' v <- matrix(rnorm(15*10), 15, 10)
 #' thresh <- 0.8
 #' topological_order(v, thresh)
 #' }
@@ -241,17 +230,11 @@ peeling <- function(V, thresh) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' beta_mat <- matrix(rnorm(33 * 23), 33, 23)
-#' se_mat <- matrix(rnorm(33 * 23)^2, 33, 23)
+#' beta_mat <- matrix(rnorm(33*23), 33, 23)
+#' se_mat <- matrix(rnorm(33*23)^2, 33, 23)
 #' n <- 3393
-#' Xdata <- matrix(rnorm(500 * 33), 500, 33)
-#' estimate_superDAG(
-#'     beta_mat = beta_mat,
-#'     se_mat = se_mat, n = n, s_ = 0,
-#'     geno_ref = var(Xdata), Xdata = Xdata
-#' )
-#' }
+#' Xdata <- matrix(rnorm(500*33), 500, 33)
+#' estimate_superDAG(beta_mat, se_mat, n, Xdata)
 estimate_superDAG <- function(beta_mat, se_mat, n,
                               s_ = 0, maf_vec = NULL, geno_ref = NULL,
                               thresh = 0.05, Xdata) {
@@ -303,14 +286,14 @@ estimate_superDAG <- function(beta_mat, se_mat, n,
 #'
 #' @examples
 #' \dontrun{
-#' beta_mat <- matrix(rnorm(33 * 23), 33, 23)
-#' se_mat <- matrix(rnorm(33 * 23)^2, 33, 23)
+#' beta_mat <- matrix(rnorm(33*23), 33, 23)
+#' se_mat <- matrix(rnorm(33*23)^2, 33, 23)
 #' n <- 3393
-#' Xdata <- matrix(rnorm(500 * 33), 500, 33)
+#' Xdata <- matrix(rnorm(500*33), 500, 33)
 #' res <- estimate_superDAG(beta_mat, se_mat, n, Xdata)
 #' an_mat <- res$an_mat
 #' iv_mat <- res$iv_mat
-#' y <- matrix(rnorm(100, 23), 100, 23)
+#' y <- matrix(rnorm(100,23),100,23)
 #' corr_Y <- cor(y)
 #' stats_list <- preprocess(beta_mat, se_mat, n)
 #' TLP_U(an_mat, iv_mat, stats_list, corr_Y, n)
@@ -434,12 +417,12 @@ TLP_U <- function(an_mat, iv_mat, stats_list,
 
 #' (Internal function) Peeling procedure implementation.
 #'
-#' @param v A q by p matrix. V matrix.
+#' @param V A q by p matrix. V matrix.
 #' @param thresh A positive scalar. Threshold.
 #'
 #' @examples
 #' \dontrun{
-#' v <- matrix(rnorm(15 * 10), 15, 10)
+#' v <- matrix(rnorm(15*10), 15, 10)
 #' thresh <- 0.8
 #' topological_order(v, thresh)
 #' }

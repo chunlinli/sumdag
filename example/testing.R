@@ -1,31 +1,6 @@
+# testing
 
-#' Estimating variance of errors.
-#'
-#' @param stats_list A list of XX, yy_vec, Xy_mat, maf_vec.
-#' This is the output of preprocess() function.
-#' @param an_mat A p by p ancestral relation matrix.
-#' @param iv_mat A p by p interventional relation matrix.
-#' @param corr_Y A p by p correlation matrix of Y.
-#' @param n A p by p sample size matrix.
-#' @param j The index of the target node.
-#'
-#' @return A list of sigma2 and RSS.
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' beta_mat <- matrix(rnorm(33*23), 33, 23)
-#' se_mat <- matrix(rnorm(33*23)^2, 33, 23)
-#' n <- 3393
-#' Xdata <- matrix(rnorm(500*33), 500, 33)
-#' res <- estimate_superDAG(beta_mat, se_mat, n, Xdata)
-#' an_mat <- res$an_mat
-#' iv_mat <- res$iv_mat
-#' y <- matrix(rnorm(100,23),100,23)
-#' corr_Y <- cor(y)
-#' stats_list <- preprocess(beta_mat, se_mat, n)
-#' estimate_sigma(stats_list, an_mat, iv_mat, corr_Y, n)
-#' }
+
 estimate_sigma <- function(stats_list, an_mat, iv_mat, corr_Y, n, j) {
     AN <- which(an_mat[, j] != 0)
     IV <- which(iv_mat[, j] != 0)
@@ -64,35 +39,6 @@ estimate_sigma <- function(stats_list, an_mat, iv_mat, corr_Y, n, j) {
     return(list(sigma2 = sigma2, RSS = RSS))
 }
 
-#' Computing likelihood ratio test for the specified edges.
-#'
-#' @param stats_list A list of XX, yy_vec, Xy_mat, maf_vec.
-#' This is the output of preprocess() function.
-#' @param an_mat A p by p ancestral relation matrix.
-#' @param iv_mat A p by p interventional relation matrix.
-#' @param pairs A list of edges to be tested.
-#' @param corr_Y A p by p correlation matrix of Y.
-#' @param n A p by p sample size matrix.
-#' @param test_type A string specifying the type of test.
-#'
-#' @return A list of likelihood_ratio, df, and p_value.
-#' @export
-#'
-#' @examples 
-#' \dontrun{
-#' beta_mat <- matrix(rnorm(33*23), 33, 23)
-#' se_mat <- matrix(rnorm(33*23)^2, 33, 23)
-#' n <- 3393
-#' Xdata <- matrix(rnorm(500*33), 500, 33)
-#' res <- estimate_superDAG(beta_mat, se_mat, n, Xdata)
-#' an_mat <- res$an_mat
-#' iv_mat <- res$iv_mat
-#' y <- matrix(rnorm(100,23),100,23)
-#' corr_Y <- cor(y)
-#' stats_list <- preprocess(beta_mat, se_mat, n)
-#' pairs <- list(c(1, 2), c(2, 3))
-#' causal_inference(stats_list, an_mat, iv_mat, pairs, corr_Y, n, "edge")
-#' }
 causal_inference <- function(stats_list, an_mat, iv_mat,
                              pairs, corr_Y, n, test_type = c("edge", "path")) {
     if (test_type == "edge") {
@@ -123,34 +69,6 @@ causal_inference <- function(stats_list, an_mat, iv_mat,
     }
 }
 
-#' (Internal) Computing likelihood ratio test for the specified edges.
-#'
-#' @param stats_list A list of XX, yy_vec, Xy_mat, maf_vec.
-#' This is the output of preprocess() function.
-#' @param an_mat A p by p ancestral relation matrix.
-#' @param iv_mat A p by p interventional relation matrix.
-#' @param pairs A list of edges to be tested.
-#' @param corr_Y A p by p correlation matrix of Y.
-#' @param n A p by p sample size matrix.
-#'
-#' @return A list of likelihood_ratio and df.
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' beta_mat <- matrix(rnorm(33*23), 33, 23)
-#' se_mat <- matrix(rnorm(33*23)^2, 33, 23)
-#' n <- 3393
-#' Xdata <- matrix(rnorm(500*33), 500, 33)
-#' res <- estimate_superDAG(beta_mat, se_mat, n, Xdata)
-#' an_mat <- res$an_mat
-#' iv_mat <- res$iv_mat
-#' y <- matrix(rnorm(100,23),100,23)
-#' corr_Y <- cor(y)
-#' stats_list <- preprocess(beta_mat, se_mat, n)
-#' pairs <- list(c(1, 2), c(2, 3))
-#' asymptotic_inference_internal(stats_list, an_mat, iv_mat, pairs, corr_Y, n)
-#' }
 asymptotic_inference_internal <- function(stats_list, an_mat, iv_mat,
                                           pairs, corr_Y, n) {
     d_mat <- an_mat

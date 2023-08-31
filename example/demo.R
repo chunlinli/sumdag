@@ -1,52 +1,8 @@
-# Estimating and Inferring a directed acyclic graph from summary statistics
-
-This repository contains the implementation of the paper
-
-- R Zilinskas, C Li, X Shen, W Pan, T Yang (2023). [Inferring a Directed Acyclic Graph of Phenotypes from GWAS Summary Statistics](https://www.biorxiv.org/content/10.1101/2023.02.10.528092v1.abstract). bioRxiv. Under review.
-
-
-The R Shiny App is ???
-
-
-## Contents
-
-The directory `./sumdag` contains the R package implementing the proposed approach.
-
-The directory `./example` contains the R code for replicating the real data application.
-
-The directory `./simulations` contains the R code for simulation studies.
-
-## Preliminaries
-
-The R environment used for development is R version 4.2.1. 
-
-The package `sumdag` requires installation of the following R packages:
-```r
-packages <- c("ncvreg","lassosum","glmtlp","MASS")
-install.packages(packages)
-```
-Then install `sumdag` from this GitHub repository:
-```r
-devtools::install_github("chunlinli/sumdag/sumdag")
-```
-
-
-## Usage and example
-
-To replicate the real data analysis, run 
-```bash
-Rscript ./example/demo.R
-```
-This will replicate the plot of the real data analysis. Here, we illustrate the usage of package by running `./example/demo` step by step.
-
-Assume the working directory is the cloned repository [https://github.com/chunlinli/sumdag](https://github.com/chunlinli/sumdag). In R, load the package `sumdag`:
-```r
+#######################################################################
+# Step 0: load the package
+#######################################################################
 library(sumdag)
-```
 
-Load the summary data. NOTE: SNP information, including MAF, is in `./example/IV_info.RData`, but is not needed here.
-
-```R
 #######################################################################
 # Step 1: read in the data
 # SNP info including MAF is in "IV_info.RData", but not needed here
@@ -71,7 +27,7 @@ snp <- rownames(beta_mat)
 protein <- colnames(beta_mat)
 p <- length(protein)
 
-# read in the UK biobank reference panel
+# read in reference panel
 load("./example/ukbb_xtx.RData")
 XX <- xtx
 
@@ -80,11 +36,7 @@ cor_mat <- read.table("./example/23protein_phe_corr_allchr.txt",
     check.names = FALSE
 )
 cor_mat <- cor_mat[protein, protein]
-```
 
-Obtain the quantities estimated from the summary statistics using `preprocess()` function.
-
-```R
 #######################################################################
 # Step 2: estimate the quantities estimated from the summary stats
 #######################################################################
@@ -96,22 +48,14 @@ stats_list <- preprocess(
     maf_vec = NULL,
     geno_ref = XX
 )
-```
 
-Estimate $V$ matrix.
-
-```R
 #######################################################################
 # Step 3: estimate the V matrix
 #######################################################################
 V <- estimate_V(beta_mat, se_mat, n, stats_list)
 rownames(V) <- snp
 colnames(V) <- protein
-```
 
-Implement the peeling algorithm in Li et al., (2023): obtain the ancestral relation graph `an_mat` and interventional relation matrix `iv_mat`.
-
-```R
 #######################################################################
 # Step 4: peeling
 #######################################################################
@@ -119,11 +63,6 @@ peel_result <- peeling(V = V, thresh = 0)
 an_mat <- as.matrix(peel_result$an_mat)
 iv_mat <- as.matrix(peel_result$iv_mat)
 
-```
-
-Run truncated-Lasso estimation based on the peeling results.
-
-```R
 #######################################################################
 # Step 5: TLP estimation after peeling
 #######################################################################
@@ -133,18 +72,15 @@ result <- TLP_U(
     stats_list = stats_list,
     as.matrix(cor_mat), n
 )
-
 # U matrix
 U <- result$U
-U
 
 # W matrix
 W <- result$W
-W
-```
 
-Now, conduct likelihood ratio test for each edge.
-```R
+summary(abs(U[U != 0]))
+summary(abs(W[W != 0]))
+
 #######################################################################
 # Step 6: test each edge
 #######################################################################
@@ -174,11 +110,7 @@ for (i in 1:nrow(U)) {
         }
     }
 }
-```
 
-Finally, plot the graph of significant edges.
-
-```R
 #######################################################################
 # Step 7: plot the graph
 #######################################################################
@@ -202,24 +134,3 @@ plot_graph(U, res,
     underlightnode = "RETN",
     graph_name = "./example/protein23_ukbb.pdf"
 )
-```
-
-
-
-
-## Citing information
-
-If you find the code useful, please consider citing 
-
-```tex
-@article{zilinskas2023inferring,
-    author = {Rachel Zilinskas, Chunlin Li, Xiaotong Shen, Wei Pan, Tianzhong Yang},
-    title = {Inferring a directed acyclic graph of phenotypes from {GWAS} summary statistics},
-    year = {2023},
-    journal = {Under review}
-}
-```
-
-The code is maintained on GitHub and the R package will be uploaded to CRAN soon. This project is in active development.
-
-Implementing the structure learning algorithms is error-prone. If you spot any error, please file an issue [here](https://github.com/chunlinli/sumdag/issues) or contact me via email -- I will be grateful to be informed.

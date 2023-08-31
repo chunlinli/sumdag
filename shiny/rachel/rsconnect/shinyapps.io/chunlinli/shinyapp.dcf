@@ -1,0 +1,12 @@
+name: shinyapp
+title: shinyapp
+username: chunlinli
+account: chunlinli
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9693738
+bundleId: 7618405
+url: https://chunlinli.shinyapps.io/shinyapp/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

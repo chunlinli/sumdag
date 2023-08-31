@@ -2,20 +2,27 @@
 % Please edit documentation in R/estimation.R
 \name{peeling}
 \alias{peeling}
-\title{Internal function: peeling}
+\title{(Internal function) Peeling procedure implementation.}
 \usage{
 peeling(V, thresh)
 }
 \arguments{
-\item{V}{V matrix produced by peeling algorithm}
+\item{V}{A q by p matrix. V matrix.}
 
-\item{thresh}{threshold}
+\item{thresh}{A positive scalar. Threshold.}
+}
+\value{
+A list of three matrices:
+A p by p ancestral relation matrix, a q by p interventional relation matrix,
+and a scalar n_test.
 }
 \description{
-This function implements peeling algorithm.
+(Internal function) Peeling procedure implementation.
 }
 \examples{
 \dontrun{
-
+v <- matrix(rnorm(15 * 10), 15, 10)
+thresh <- 0.8
+topological_order(v, thresh)
 }
 }

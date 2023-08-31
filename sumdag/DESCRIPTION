@@ -1,12 +1,12 @@
 Package: sumdag
 Type: Package
 Title: Estimation and inference of directed acyclic graph from GWAS summary statistics
-Version: 0.1.0
+Version: 0.9.0
 Authors@R: c(
-    person("Tianzhong", "Yang", , "yang3704@umn.edu", role = c("aut", "cph"),
-           comment = c(ORCID = "0000-0002-0162-7740")),
     person("Chunlin", "Li", , "li000007@umn.edu", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0003-2989-8785")),
+    person("Tianzhong", "Yang", , "yang3704@umn.edu", role = c("aut", "cph", "ths"),
+           comment = c(ORCID = "0000-0002-0162-7740")),
     person("Rachel", "Zilinskas", role = c("aut", "cph")),
     person("Xiaotong", "Shen", role = c("ths", "cph")),
     person("Wei", "Pan", role = c("ths", "cph"))

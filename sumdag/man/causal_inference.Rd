@@ -2,41 +2,53 @@
 % Please edit documentation in R/testing.R
 \name{causal_inference}
 \alias{causal_inference}
-\title{Likelihood ratio tests}
+\title{Computing likelihood ratio test for the specified edges.}
 \usage{
 causal_inference(
-  PiHat,
-  PhiHat,
-  ss_back,
+  stats_list,
+  an_mat,
+  iv_mat,
   pairs,
-  cormat,
-  N,
+  corr_Y,
+  n,
   test_type = c("edge", "path")
 )
 }
 \arguments{
-\item{PiHat}{A pxp superset of the directed relations among phenotypes; output from superDAG function}
+\item{stats_list}{A list of XX, yy_vec, Xy_mat, maf_vec.
+This is the output of preprocess() function.}
 
-\item{PhiHat}{A qxp superset of the interventional relation; output from superDAG function}
+\item{an_mat}{A p by p ancestral relation matrix.}
 
-\item{ss_back}{output from the summary_stats_preprocess function}
+\item{iv_mat}{A p by p interventional relation matrix.}
 
-\item{pairs}{A list of vectors of length two to be tested, with each vector represents a directed node from the first to the second item of the vector}
+\item{pairs}{A list of edges to be tested.}
 
-\item{cormat}{pxp correlation matrix of phenotypes; this matrix can be estimated by empricial correlation of null SNP.}
+\item{corr_Y}{A p by p correlation matrix of Y.}
 
-\item{N}{A qxp matrix of corresponding sample size for each SNP-phenotype pair. A scalar is also acceptable when all SNP-phentype pairs have the same sample size}
+\item{n}{A p by p sample size matrix.}
 
-\item{test_type}{"edge" refers to the test of multiple directed relations; "path" refers to the test of a directed pathway}
+\item{test_type}{A string specifying the type of test.}
 }
 \value{
-A list of likelihood ratio, and p-value
+A list of likelihood_ratio, df, and p_value.
 }
 \description{
-Likelihood ratio tests
+Computing likelihood ratio test for the specified edges.
 }
 \examples{
 \dontrun{
-
+beta_mat <- matrix(rnorm(33*23), 33, 23)
+se_mat <- matrix(rnorm(33*23)^2, 33, 23)
+n <- 3393
+Xdata <- matrix(rnorm(500*33), 500, 33)
+res <- estimate_superDAG(beta_mat, se_mat, n, Xdata)
+an_mat <- res$an_mat
+iv_mat <- res$iv_mat
+y <- matrix(rnorm(100,23),100,23)
+corr_Y <- cor(y)
+stats_list <- preprocess(beta_mat, se_mat, n)
+pairs <- list(c(1, 2), c(2, 3))
+causal_inference(stats_list, an_mat, iv_mat, pairs, corr_Y, n, "edge")
 }
 }

@@ -2,28 +2,43 @@
 % Please edit documentation in R/testing.R
 \name{asymptotic_inference_internal}
 \alias{asymptotic_inference_internal}
-\title{Internal function: asymptotic inference}
+\title{(Internal) Computing likelihood ratio test for the specified edges.}
 \usage{
-asymptotic_inference_internal(ss_back, PiHat, PhiHat, pairs, cormat, N)
+asymptotic_inference_internal(stats_list, an_mat, iv_mat, pairs, corr_Y, n)
 }
 \arguments{
-\item{ss_back}{ss_back}
+\item{stats_list}{A list of XX, yy_vec, Xy_mat, maf_vec.
+This is the output of preprocess() function.}
 
-\item{PiHat}{PiHat}
+\item{an_mat}{A p by p ancestral relation matrix.}
 
-\item{PhiHat}{PhiHat}
+\item{iv_mat}{A p by p interventional relation matrix.}
 
-\item{pairs}{pairs}
+\item{pairs}{A list of edges to be tested.}
 
-\item{cormat}{cormat}
+\item{corr_Y}{A p by p correlation matrix of Y.}
 
-\item{N}{N}
+\item{n}{A p by p sample size matrix.}
+}
+\value{
+A list of likelihood_ratio and df.
 }
 \description{
-Internal function: asymptotic inference
+(Internal) Computing likelihood ratio test for the specified edges.
 }
 \examples{
 \dontrun{
-
+beta_mat <- matrix(rnorm(33*23), 33, 23)
+se_mat <- matrix(rnorm(33*23)^2, 33, 23)
+n <- 3393
+Xdata <- matrix(rnorm(500*33), 500, 33)
+res <- estimate_superDAG(beta_mat, se_mat, n, Xdata)
+an_mat <- res$an_mat
+iv_mat <- res$iv_mat
+y <- matrix(rnorm(100,23),100,23)
+corr_Y <- cor(y)
+stats_list <- preprocess(beta_mat, se_mat, n)
+pairs <- list(c(1, 2), c(2, 3))
+asymptotic_inference_internal(stats_list, an_mat, iv_mat, pairs, corr_Y, n)
 }
 }
