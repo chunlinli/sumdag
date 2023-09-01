@@ -1,5 +1,7 @@
 setwd("~/Documents/projects/sumdag/shiny/shinyapp")
 
+setwd("/Users/chunlinli/Library/CloudStorage/Dropbox/Mac (2)/Documents/sumdag/shiny/shinyapp")
+
 library(shiny)
 library(igraph)
 library(sumdag)
@@ -8,10 +10,47 @@ load("ppi.RData")
 p <- beta_mat %>% ncol() # 23
 protein <- colnames(beta_mat)
 snp <- rownames(beta_mat)
-
-
 vertex.color <- rep("#7a0019", p)
 
+
+update_plot <- function(g) {
+    la <- layout.circle(g)
+
+    plot(g,
+        layout = layout.circle, vertex.label = "", main = "",
+        vertex.color = vertex.color,
+        vertex.frame.color = vertex.color,
+        vertex.shape = "circle", # One of "none", "circle", "square", "csquare", "rectangle" "crectangle", "vrectangle", "pie", "raster", or "sphere"
+        vertex.size = 10, # Size of the node (default is 15)
+
+        edge.color = "#000000", # Edge color
+        edge.width = 0.5, # Edge width, defaults to 1
+        edge.arrow.size = 0.5, # Arrow size, defaults to 1
+        edge.arrow.width = 0.5, # Arrow width, defaults to 1
+        #edge.lty = 2 # Line type, could be 0 or "blank", 1 or "solid", 2 or "dashed", 3 or "dotted", 4 or "dotdash", 5 or "longdash", 6 or "twodash"
+    )
+
+    # Apply labels manually
+    # Specify x and y coordinates of labels, adjust outward as desired
+    x <- la[, 1] * 1.2
+    y <- la[, 2] * 1.2
+
+    # Create vector of angles for text based on number of nodes
+    # (flipping the orientation of the words half way around so none appear upside down)
+    angle <- ifelse(atan(-(la[, 1] / la[, 2])) * (180 / pi) < 0,
+        90 + atan(-(la[, 1] / la[, 2])) * (180 / pi),
+        270 + atan(-la[, 1] / la[, 2]) * (180 / pi)
+    )
+
+    # Apply the text labels with a loop with angle as srt
+    for (i in 1:length(x)) {
+        text(
+            x = x[i], y = y[i], labels = V(g)$name[i],
+            adj = NULL, pos = NULL, cex = 1, col = "black",
+            srt = angle[i], xpd = T
+        )
+    }
+}
 
 
 # Define UI for application
@@ -27,12 +66,12 @@ ui <- fluidPage(
         sidebarPanel(
 
             # Edge selection
-            # The choices can be changed to any list of nodes
             selectInput("from_node", "From Node:", choices = protein),
             selectInput("to_node", "To Node:", choices = protein),
 
-            # Add edge button
+            # Add and Delete edge buttons
             actionButton("add_edge", "Add Edge"),
+            actionButton("delete_edge", "Delete Edge"),
 
             # Type of testing
             radioButtons("test_type", "Type of Testing:",
@@ -49,13 +88,15 @@ ui <- fluidPage(
             plotOutput("network_plot"),
 
             # Output Panel
-            h3("Results"),
-            textOutput("likelihood_ratio"),
-            textOutput("degrees_freedom"),
-            textOutput("p_value")
+            # textOutput("likelihood_ratio"),
+            # textOutput("degrees_freedom"),
+            # textOutput("p_value")
         )
     )
 )
+
+
+
 
 
 
@@ -65,152 +106,78 @@ server <- function(input, output, session) {
     d_mat <- matrix(0, p, p)
     colnames(d_mat) <- rownames(d_mat) <- protein
     g <- graph_from_adjacency_matrix(d_mat, mode = "directed")
-    la <- layout.circle(g)
 
 
     output$network_plot <- renderPlot({
         # plot(g, edge.arrow.size = 0.5, edge.arrow.width = 0.5, edge.lty = 2) # edge.lty = 2 for dashed lines
+        E(g)$lty <- 2
 
-        plot(g,
-            layout = layout.circle, vertex.label = "", main = "",
-
-            # === vertex
-            # vertex.color = "darkred", # Node color
-            # vertex.frame.color = "darkred", # Node border color
-            vertex.color = vertex.color,
-            vertex.frame.color = vertex.color,
-            vertex.shape = "circle", # One of "none", "circle", "square", "csquare", "rectangle" "crectangle", "vrectangle", "pie", "raster", or "sphere"
-            vertex.size = 10, # Size of the node (default is 15)
-
-            # === Edge
-            edge.color = "#000000", # Edge color
-            edge.width = 0.5, # Edge width, defaults to 1
-            edge.arrow.size = 0.5, # Arrow size, defaults to 1
-            edge.arrow.width = 0.5, # Arrow width, defaults to 1
-            edge.lty = 2 # Line type, could be 0 or "blank", 1 or "solid", 2 or "dashed", 3 or "dotted", 4 or "dotdash", 5 or "longdash", 6 or "twodash"
-        )
-
-
-        ## Apply labels manually
-        # Specify x and y coordinates of labels, adjust outward as desired
-        x <- la[, 1] * 1.2
-        y <- la[, 2] * 1.2
-
-        # Create vector of angles for text based on number of nodes (flipping the orientation of the words half way around so none appear upside down)
-        angle <- ifelse(atan(-(la[, 1] / la[, 2])) * (180 / pi) < 0,
-            90 + atan(-(la[, 1] / la[, 2])) * (180 / pi),
-            270 + atan(-la[, 1] / la[, 2]) * (180 / pi)
-        )
-
-        # Apply the text labels with a loop with angle as srt
-        for (i in 1:length(x)) {
-            text(
-                x = x[i], y = y[i], labels = V(g)$name[i],
-                adj = NULL, pos = NULL, cex = 1, col = "black",
-                srt = angle[i], xpd = T
-            )
-        }
+        update_plot(g)
     })
 
-    # Add Edge
+
     observeEvent(input$add_edge, {
-        from <- input$from_node
-        to <- input$to_node
-
-        # Update adjacency matrix
-        if (from != to) {
-            d_mat[from, to] <- 1
-
-            # Update graph
-            g <<- add_edges(g, c(from, to))
-        }
-
-        # Plot the graph
-        output$network_plot <- renderPlot({
-            # plot(g, edge.arrow.size = 0.5, edge.arrow.width = 0.5, edge.lty = 2) # edge.lty = 2 for dashed lines
-
-            plot(g,
-                layout = layout.circle, vertex.label = "", main = "",
-
-                # === vertex
-                # vertex.color = "darkred", # Node color
-                # vertex.frame.color = "darkred", # Node border color
-                vertex.color = vertex.color,
-                vertex.frame.color = vertex.color,
-                vertex.shape = "circle", # One of "none", "circle", "square", "csquare", "rectangle" "crectangle", "vrectangle", "pie", "raster", or "sphere"
-                vertex.size = 10, # Size of the node (default is 15)
-
-                # === Edge
-                edge.color = "#000000", # Edge color
-                edge.width = 0.5, # Edge width, defaults to 1
-                edge.arrow.size = 0.5, # Arrow size, defaults to 1
-                edge.arrow.width = 0.5, # Arrow width, defaults to 1
-                edge.lty = 2 # Line type, could be 0 or "blank", 1 or "solid", 2 or "dashed", 3 or "dotted", 4 or "dotdash", 5 or "longdash", 6 or "twodash"
-            )
-
-
-            ## Apply labels manually
-            # Specify x and y coordinates of labels, adjust outward as desired
-            x <- la[, 1] * 1.2
-            y <- la[, 2] * 1.2
-
-            # Create vector of angles for text based on number of nodes (flipping the orientation of the words half way around so none appear upside down)
-            angle <- ifelse(atan(-(la[, 1] / la[, 2])) * (180 / pi) < 0,
-                90 + atan(-(la[, 1] / la[, 2])) * (180 / pi),
-                270 + atan(-la[, 1] / la[, 2]) * (180 / pi)
-            )
-
-            # Apply the text labels with a loop with angle as srt
-            for (i in 1:length(x)) {
-                text(
-                    x = x[i], y = y[i], labels = V(g)$name[i],
-                    adj = NULL, pos = NULL, cex = 1, col = "black",
-                    srt = angle[i], xpd = T
-                )
-            }
-        })
+        handle_edge(input$from_node, input$to_node, action = "add")
     })
 
-    # Perform Hypothesis Testing
-    observeEvent(input$calculate, {
+    # Delete Edge
+    observeEvent(input$delete_edge, {
+        handle_edge(input$from_node, input$to_node, action = "delete")
+    })
 
-        # convert the nonzero entries in d_mat to pairs
-        edges <- which(d_mat != 0, arr.ind = TRUE)
+    handle_edge <- function(from, to, action) {
+        if (action == "add") {
+            # Update adjacency matrix
+            if (from != to) {
+                d_mat[from, to] <- 1
 
-        # convert pairs to a list of edges
-        pairs <- list()
-        for (i in 1:nrow(edges)) {
-            pairs[[i]] <- c(edges[i, 1], edges[i, 2])
+                # Update graph
+                g <<- add_edges(g, c(from, to))
+            }
+        } else if (action == "delete") {
+            # Update adjacency matrix
+            d_mat[from, to] <- 0
+
+            # Get edge id and delete the edge from the graph
+            edge_id <- get.edge.ids(g, c(from, to))
+            if (edge_id != -1) { # Edge exists
+                g <<- delete_edges(g, edge_id)
+            }
         }
-
-
-
-        # Assume causal_inference function returns a list of significant edges
-        results <- sumdag::causal_inference(d_mat, test_type = input$test_type)
-
-        # Update graph to highlight significant edges
-        # Assuming results$significant_edges is a list of significant edges in the format c("from", "to")
-        E(g)$lty <- ifelse(get.edge.ids(g, results$significant_edges), 1, 2) # edge.lty = 1 for solid lines
-        E(g)$color <- ifelse(get.edge.ids(g, results$significant_edges), "red", "black")
 
         # Plot the updated graph
         output$network_plot <- renderPlot({
-            #plot(g, edge.arrow.size = 0.5, edge.arrow.width = 0.5)
-
-
-
-
+            E(g)$lty <- 2
+            update_plot(g)
         })
+    }
 
-        # Display the results
-        output$likelihood_ratio <- renderText({
-            paste("Likelihood Ratio:", results$likelihood_ratio)
-        })
-        output$degrees_freedom <- renderText({
-            paste("Degrees of Freedom:", results$df)
-        })
-        output$p_value <- renderText({
-            paste("P-value:", results$p_value)
+    # Perform Hypothesis Testing
+    observeEvent(input$calculate, {
+        significant_edges_matrix <- which(d_mat != 0, arr.ind = TRUE)
+        vertex_names <- rownames(d_mat) # Assuming row and column names are the same and represent vertex names
+        significant_edges <- c(mapply(function(r, c) {
+            c(vertex_names[r], vertex_names[c])
+        }, significant_edges_matrix[, "row"], significant_edges_matrix[, "col"]))
+
+        # Now, significant_edges should be a vector like c('A', 'B', 'C', 'D') for edges A->B and C->D
+
+        all_edges <- get.edgelist(g)
+        tested_edge_ids <- get.edge.ids(g, as.vector(t(all_edges)))
+
+        significant_edge_ids <- get.edge.ids(g, significant_edges)
+        
+        
+        
+        E(g)$lty <- 1#ifelse(tested_edge_ids %in% significant_edge_ids, 1, 2) # 1 for solid, 2 for dashed
+        E(g)$color <- 1#ifelse(tested_edge_ids %in% significant_edge_ids, "red", "black")
+
+
+
+        # Plot the updated graph
+        output$network_plot <- renderPlot({
+            # plot(g, edge.arrow.size = 0.5, edge.arrow.width = 0.5)
+            update_plot(g)
         })
     })
 }
