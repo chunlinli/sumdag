@@ -21,8 +21,9 @@ The R environment used for development is R version 4.2.1.
 
 The package `sumdag` requires installation of the following R packages:
 ```r
-packages <- c("ncvreg","lassosum","glmtlp","MASS")
+packages <- c("ncvreg","lassosum","MASS")
 install.packages(packages)
+devtools::install_github("chunlinli/glmtlp")
 ```
 Then install `sumdag` from this GitHub repository:
 ```r

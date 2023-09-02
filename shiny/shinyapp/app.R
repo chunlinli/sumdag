@@ -3,6 +3,7 @@ library(devtools)
 devtools::install_github("chunlinli/glmtlp")
 devtools::install_github("chunlinli/sumdag/sumdag")
 
+library(glmtlp)
 library(sumdag)
 
 library(shiny)
