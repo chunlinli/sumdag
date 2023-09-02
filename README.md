@@ -38,6 +38,10 @@ To start the Shiny App, run the following in R
 library(shiny)
 runApp("./shiny/shinyapp")
 ```
+
+<img src="shinyUI.png" alt="Shiny UI" width="400"/>
+
+
 ## Usage and example
 
 To replicate the real data analysis, run 
