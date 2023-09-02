@@ -33,14 +33,10 @@ devtools::install_github("chunlinli/sumdag/sumdag")
 
 ## Shiny
 
-To start the Shiny App, 
-```bash
-cd ./shiny
-```
-Run the following in R,
+To start the Shiny App, run the following in R
 ```R
 library(shiny)
-runApp("shinyapp")
+runApp("./shiny/shinyapp")
 ```
 ## Usage and example
 
