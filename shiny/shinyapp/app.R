@@ -178,8 +178,8 @@ server <- function(input, output, session) {
 
         output_text <- paste(
             ifelse(num_edges > 1,
-                paste("There are", num_edges, "significant edges (displayed in solid and red arrows)<br/>"),
-                paste("There is", num_edges, "significant edge (displayed in solid and red arrow)<br/>")
+                paste("There are", num_edges, "significant edges (displayed in solid and red arrows):<br/>"),
+                paste("There is", num_edges, "significant edge (displayed in solid and red arrow):<br/>")
             ),
             paste(formatted_edges, collapse = "<br/>")
         )
@@ -228,6 +228,17 @@ server <- function(input, output, session) {
         }
 
         p_value[p_value >= 0.05 / sum(d_mat != 0)] <- -1
+        if (sum(p_value > 0) == 0) {
+            output$network_plot <- renderPlot({
+                # plot(g, edge.arrow.size = 0.5, edge.arrow.width = 0.5)
+                E(g)$lty <- 2
+                update_plot(g)
+            })
+            output$significant_edges <- renderUI({
+                HTML("No significant edge.")
+            })
+            return()
+        }
         significant_edges_matrix <- which(p_value > 0, arr.ind = TRUE)
 
         vertex_names <- rownames(d_mat) # Assuming row and column names are the same and represent vertex names
