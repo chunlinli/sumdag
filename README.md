@@ -5,9 +5,6 @@ This repository contains the implementation of the paper
 - R Zilinskas, C Li, X Shen, W Pan, T Yang (2023). [Inferring a Directed Acyclic Graph of Phenotypes from GWAS Summary Statistics](https://www.biorxiv.org/content/10.1101/2023.02.10.528092v1.abstract). bioRxiv. Under review.
 
 
-The R Shiny App is ???
-
-
 ## Contents
 
 The directory `./sumdag` contains the R package implementing the proposed approach.
@@ -15,6 +12,8 @@ The directory `./sumdag` contains the R package implementing the proposed approa
 The directory `./example` contains the R code for replicating the real data application.
 
 The directory `./simulations` contains the R code for simulation studies.
+
+The directory `./shiny/shinyapp` contains the R code for Shiny App. 
 
 ## Preliminaries
 
