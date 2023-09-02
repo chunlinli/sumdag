@@ -31,6 +31,17 @@ devtools::install_github("chunlinli/sumdag/sumdag")
 ```
 
 
+## Shiny
+
+To start the Shiny App, 
+```bash
+cd ./shiny
+```
+Run the following in R,
+```R
+library(shiny)
+runApp("shinyapp")
+```
 ## Usage and example
 
 To replicate the real data analysis, run 
