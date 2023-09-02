@@ -41,6 +41,7 @@ runApp("./shiny/shinyapp")
 
 <img src="shinyUI.png" alt="Shiny UI" width="400"/>
 
+NOTE: clicking "test all edges" will replicate the results in the real data application. 
 
 ## Usage and example
 
