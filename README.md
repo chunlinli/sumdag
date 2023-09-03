@@ -1,4 +1,4 @@
-# Estimating and Inferring a directed acyclic graph from summary statistics
+# Estimating and inferring a directed acyclic graph from summary statistics
 
 This repository contains the implementation of the paper
 
